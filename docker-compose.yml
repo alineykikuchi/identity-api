@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  identity.webapi:
+    container_name: identity_webapi
+    image: ${DOCKER_REGISTRY-}identitywebapi
+    build:
+      context: .
+      dockerfile: src/Identity.WebApi/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    ports:
+      - "8080"
+      - "8081"
+    depends_on:
+      - identity.database
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  identity.database:
+    container_name: identity_database
+    image: postgres:13
+    environment:
+      POSTGRES_DB: identity_db
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: ev@luAt10n
+    ports:
+      # 5433 on the host to avoid clashing with the sales API PostgreSQL instance
+      - "5433:5432"
+    restart: unless-stopped
