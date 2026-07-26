@@ -7,14 +7,10 @@
 
   <ItemGroup>
     <Folder Include="Common\" />
-    <Folder Include="Entities\" />
-    <Folder Include="Enums\" />
     <Folder Include="Events\" />
     <Folder Include="Exceptions\" />
-    <Folder Include="Repositories\" />
     <Folder Include="Services\" />
     <Folder Include="Specifications\" />
-    <Folder Include="Validation\" />
     <Folder Include="ValueObjects\" />
   </ItemGroup>
 

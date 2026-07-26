@@ -9,9 +9,7 @@
 
   <ItemGroup>
     <Folder Include="Application\TestData\" />
-    <Folder Include="Domain\Entities\" />
     <Folder Include="Domain\Specifications\" />
-    <Folder Include="Domain\Validation\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,3 +1,4 @@
+using Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,12 @@ public class DefaultContext : DbContext
     public DefaultContext(DbContextOptions<DefaultContext> options) : base(options)
     {
     }
+
+    /// <summary>User accounts.</summary>
+    public DbSet<User> Users => Set<User>();
+
+    /// <summary>Issued refresh tokens (stored as hashes).</summary>
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
