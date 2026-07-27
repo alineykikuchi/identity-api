@@ -1,3 +1,4 @@
+using FluentValidation;
 using Identity.Common.Validation;
 using Identity.WebApi.Common;
 using System.Net;
@@ -31,10 +32,35 @@ public class GlobalExceptionMiddleware
         {
             await _next(context);
         }
+        catch (ValidationException)
+        {
+            // Delegated to ValidationExceptionMiddleware, which maps it to a 400 response.
+            throw;
+        }
+        catch (InvalidOperationException ex)
+        {
+            await HandleConflictExceptionAsync(context, ex);
+        }
         catch (Exception ex)
         {
             await HandleGenericExceptionAsync(context, ex);
         }
+    }
+
+    private async Task HandleConflictExceptionAsync(HttpContext context, InvalidOperationException exception)
+    {
+        _logger.LogWarning(exception, "Conflict occurred: {Message}", exception.Message);
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.Conflict;
+
+        var response = new ApiResponse
+        {
+            Success = false,
+            Message = string.IsNullOrWhiteSpace(exception.Message) ? "Operation conflict" : exception.Message
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, _jsonOptions));
     }
 
     private async Task HandleGenericExceptionAsync(HttpContext context, Exception exception)
