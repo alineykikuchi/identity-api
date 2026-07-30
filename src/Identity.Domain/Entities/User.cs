@@ -1,3 +1,4 @@
+using Identity.Common.Security;
 using Identity.Domain.Enums;
 
 namespace Identity.Domain.Entities;
@@ -6,7 +7,11 @@ namespace Identity.Domain.Entities;
 /// A user account managed by the Identity provider. The plaintext password is never
 /// stored: only its BCrypt hash (see <see cref="PasswordHash"/>).
 /// </summary>
-public class User
+/// <remarks>
+/// Implements <see cref="IUser"/> (explicitly) so the entity can be handed directly to
+/// the JWT generator without exposing token-oriented members on its public API.
+/// </remarks>
+public class User : IUser
 {
     /// <summary>Unique identifier of the user.</summary>
     public Guid Id { get; private set; }
@@ -51,6 +56,18 @@ public class User
         UpdatedAt = CreatedAt;
     }
 
+    /// <summary>Deactivates the account so it can no longer authenticate.</summary>
+    public void Deactivate()
+    {
+        Status = UserStatus.Inactive;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     /// <summary>Normalizes an email for storage and comparison (trim + lowercase).</summary>
     public static string Normalize(string email) => (email ?? string.Empty).Trim().ToLowerInvariant();
+
+    // IUser: the token-facing view of the user. Role stays empty until roles arrive (TASK-08).
+    string IUser.Id => Id.ToString();
+    string IUser.Username => Email;
+    string IUser.Role => string.Empty;
 }

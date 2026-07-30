@@ -14,6 +14,7 @@ public class ApplicationModuleInitializer : IModuleInitializer
     public void Initialize(WebApplicationBuilder builder)
     {
         builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        builder.Services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
 
         // FluentValidation validators consumed by the MediatR ValidationBehavior pipeline.
         // Registered explicitly as features are added.

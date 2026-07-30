@@ -37,6 +37,10 @@ public class GlobalExceptionMiddleware
             // Delegated to ValidationExceptionMiddleware, which maps it to a 400 response.
             throw;
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            await HandleUnauthorizedExceptionAsync(context, ex);
+        }
         catch (InvalidOperationException ex)
         {
             await HandleConflictExceptionAsync(context, ex);
@@ -45,6 +49,22 @@ public class GlobalExceptionMiddleware
         {
             await HandleGenericExceptionAsync(context, ex);
         }
+    }
+
+    private async Task HandleUnauthorizedExceptionAsync(HttpContext context, UnauthorizedAccessException exception)
+    {
+        _logger.LogInformation("Unauthorized request: {Message}", exception.Message);
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+
+        var response = new ApiResponse
+        {
+            Success = false,
+            Message = string.IsNullOrWhiteSpace(exception.Message) ? "Unauthorized" : exception.Message
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, _jsonOptions));
     }
 
     private async Task HandleConflictExceptionAsync(HttpContext context, InvalidOperationException exception)
