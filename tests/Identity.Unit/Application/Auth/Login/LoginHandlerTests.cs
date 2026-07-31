@@ -5,6 +5,7 @@ using Identity.Domain.Entities;
 using Identity.Domain.Repositories;
 using Microsoft.Extensions.Configuration;
 using NSubstitute;
+using RefreshTokenEntity = Identity.Domain.Entities.RefreshToken;
 
 namespace Identity.Unit.Application.Auth.Login;
 
@@ -40,8 +41,8 @@ public class LoginHandlerTests
         _jwtTokenGenerator.GenerateToken(Arg.Any<IUser>()).Returns("access-token");
         _refreshTokenGenerator.Generate().Returns("raw-refresh-token");
         _refreshTokenGenerator.Hash("raw-refresh-token").Returns("hashed-refresh-token");
-        _refreshTokenRepository.CreateAsync(Arg.Any<RefreshToken>(), Arg.Any<CancellationToken>())
-            .Returns(callInfo => callInfo.Arg<RefreshToken>());
+        _refreshTokenRepository.CreateAsync(Arg.Any<RefreshTokenEntity>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => callInfo.Arg<RefreshTokenEntity>());
 
         var result = await _handler.Handle(ValidCommand, CancellationToken.None);
 
@@ -50,7 +51,7 @@ public class LoginHandlerTests
         result.ExpiresIn.Should().Be(900); // default 15 minutes
 
         await _refreshTokenRepository.Received(1).CreateAsync(
-            Arg.Is<RefreshToken>(rt => rt.UserId == user.Id
+            Arg.Is<RefreshTokenEntity>(rt => rt.UserId == user.Id
                 && rt.TokenHash == "hashed-refresh-token"
                 && rt.TokenHash != "raw-refresh-token"),
             Arg.Any<CancellationToken>());
@@ -65,7 +66,7 @@ public class LoginHandlerTests
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
         _jwtTokenGenerator.DidNotReceive().GenerateToken(Arg.Any<IUser>());
-        await _refreshTokenRepository.DidNotReceive().CreateAsync(Arg.Any<RefreshToken>(), Arg.Any<CancellationToken>());
+        await _refreshTokenRepository.DidNotReceive().CreateAsync(Arg.Any<RefreshTokenEntity>(), Arg.Any<CancellationToken>());
     }
 
     [Fact(DisplayName = "A wrong password returns the generic unauthorized error and issues nothing")]
@@ -79,7 +80,7 @@ public class LoginHandlerTests
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
         _jwtTokenGenerator.DidNotReceive().GenerateToken(Arg.Any<IUser>());
-        await _refreshTokenRepository.DidNotReceive().CreateAsync(Arg.Any<RefreshToken>(), Arg.Any<CancellationToken>());
+        await _refreshTokenRepository.DidNotReceive().CreateAsync(Arg.Any<RefreshTokenEntity>(), Arg.Any<CancellationToken>());
     }
 
     [Fact(DisplayName = "An inactive account returns the generic unauthorized error even with the right password")]
@@ -94,6 +95,6 @@ public class LoginHandlerTests
 
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
         _jwtTokenGenerator.DidNotReceive().GenerateToken(Arg.Any<IUser>());
-        await _refreshTokenRepository.DidNotReceive().CreateAsync(Arg.Any<RefreshToken>(), Arg.Any<CancellationToken>());
+        await _refreshTokenRepository.DidNotReceive().CreateAsync(Arg.Any<RefreshTokenEntity>(), Arg.Any<CancellationToken>());
     }
 }

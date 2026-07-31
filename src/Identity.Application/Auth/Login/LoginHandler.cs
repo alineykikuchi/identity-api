@@ -4,6 +4,7 @@ using Identity.Domain.Enums;
 using Identity.Domain.Repositories;
 using MediatR;
 using Microsoft.Extensions.Configuration;
+using RefreshTokenEntity = Identity.Domain.Entities.RefreshToken;
 
 namespace Identity.Application.Auth.Login;
 
@@ -73,7 +74,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, LoginResult>
         var refreshTokenDays = JwtSettings.GetRefreshTokenDays(_configuration);
 
         var rawRefreshToken = _refreshTokenGenerator.Generate();
-        var refreshToken = new RefreshToken(
+        var refreshToken = new RefreshTokenEntity(
             user.Id,
             _refreshTokenGenerator.Hash(rawRefreshToken),
             DateTime.UtcNow.AddDays(refreshTokenDays));

@@ -1,7 +1,9 @@
 using AutoMapper;
 using Identity.Application.Auth.Login;
+using Identity.Application.Auth.RefreshToken;
 using Identity.WebApi.Common;
 using Identity.WebApi.Features.Auth.Login;
+using Identity.WebApi.Features.Auth.RefreshToken;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +45,28 @@ public class AuthController : ControllerBase
             Success = true,
             Message = "Login successful",
             Data = _mapper.Map<LoginResponse>(result)
+        });
+    }
+
+    /// <summary>
+    /// Exchanges a valid refresh token for a new access + refresh token pair (rotation).
+    /// The credential is the refresh token itself, so the endpoint is anonymous.
+    /// </summary>
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ApiResponseWithData<RefreshTokenResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
+    {
+        var command = _mapper.Map<RefreshTokenCommand>(request);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        return Ok(new ApiResponseWithData<RefreshTokenResponse>
+        {
+            Success = true,
+            Message = "Token refreshed successfully",
+            Data = _mapper.Map<RefreshTokenResponse>(result)
         });
     }
 }
