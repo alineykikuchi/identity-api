@@ -1,7 +1,9 @@
 using AutoMapper;
 using Identity.Application.Users.CreateUser;
+using Identity.Application.Users.GetMe;
 using Identity.WebApi.Common;
 using Identity.WebApi.Features.Users.CreateUser;
+using Identity.WebApi.Features.Users.GetMe;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +16,7 @@ namespace Identity.WebApi.Features.Users;
 /// </summary>
 [ApiController]
 [Route("api")]
-public class UsersController : ControllerBase
+public class UsersController : BaseController
 {
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
@@ -41,6 +43,30 @@ public class UsersController : ControllerBase
             Success = true,
             Message = "User registered successfully",
             Data = _mapper.Map<CreateUserResponse>(result)
+        });
+    }
+
+    /// <summary>Returns the profile of the authenticated user.</summary>
+    /// <remarks>
+    /// The access token is validated by the JWT middleware, so a missing, malformed or
+    /// expired token is rejected before this action runs. The user is then loaded from the
+    /// database, which stays the source of truth: an account deactivated after the token
+    /// was issued is rejected as well.
+    /// </remarks>
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(ApiResponseWithData<GetMeResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Me(CancellationToken cancellationToken)
+    {
+        var query = new GetMeQuery { UserId = GetCurrentUserId() };
+        var result = await _mediator.Send(query, cancellationToken);
+
+        return Ok(new ApiResponseWithData<GetMeResponse>
+        {
+            Success = true,
+            Message = "User retrieved successfully",
+            Data = _mapper.Map<GetMeResponse>(result)
         });
     }
 }
