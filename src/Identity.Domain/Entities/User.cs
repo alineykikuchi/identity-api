@@ -56,6 +56,22 @@ public class User : IUser
         UpdatedAt = CreatedAt;
     }
 
+    /// <summary>Updates the display name. A blank name clears it.</summary>
+    /// <param name="name">New display name; trimmed before being stored.</param>
+    public void UpdateName(string? name)
+    {
+        Name = string.IsNullOrWhiteSpace(name) ? null : name.Trim();
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>Replaces the stored password hash.</summary>
+    /// <param name="passwordHash">BCrypt hash of the new password. Never the plaintext.</param>
+    public void ChangePassword(string passwordHash)
+    {
+        PasswordHash = passwordHash;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     /// <summary>Deactivates the account so it can no longer authenticate.</summary>
     public void Deactivate()
     {

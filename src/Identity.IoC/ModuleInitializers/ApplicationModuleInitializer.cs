@@ -1,5 +1,7 @@
 using FluentValidation;
+using Identity.Application.Users.ChangePassword;
 using Identity.Application.Users.CreateUser;
+using Identity.Application.Users.UpdateUser;
 using Identity.Common.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,5 +21,7 @@ public class ApplicationModuleInitializer : IModuleInitializer
         // FluentValidation validators consumed by the MediatR ValidationBehavior pipeline.
         // Registered explicitly as features are added.
         builder.Services.AddScoped<IValidator<CreateUserCommand>, CreateUserValidator>();
+        builder.Services.AddScoped<IValidator<UpdateUserCommand>, UpdateUserValidator>();
+        builder.Services.AddScoped<IValidator<ChangePasswordCommand>, ChangePasswordValidator>();
     }
 }
