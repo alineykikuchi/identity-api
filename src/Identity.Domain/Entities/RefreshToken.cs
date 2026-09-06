@@ -12,6 +12,13 @@ public class RefreshToken
     /// <summary>Owning user's identifier.</summary>
     public Guid UserId { get; private set; }
 
+    /// <summary>
+    /// Application this token was issued for, or <c>null</c> when the login carried no
+    /// client id. Persisting it lets the refresh flow reissue access tokens with the same
+    /// audience and application roles as the original login.
+    /// </summary>
+    public Guid? ApplicationId { get; private set; }
+
     /// <summary>SHA-256 hash of the token. The plaintext token is never stored.</summary>
     public string TokenHash { get; private set; } = string.Empty;
 
@@ -36,12 +43,14 @@ public class RefreshToken
     /// <param name="userId">Owning user's identifier.</param>
     /// <param name="tokenHash">SHA-256 hash of the issued token.</param>
     /// <param name="expiresAt">Expiration timestamp (UTC).</param>
-    public RefreshToken(Guid userId, string tokenHash, DateTime expiresAt)
+    /// <param name="applicationId">Application the token is scoped to, or <c>null</c> when none.</param>
+    public RefreshToken(Guid userId, string tokenHash, DateTime expiresAt, Guid? applicationId = null)
     {
         Id = Guid.NewGuid();
         UserId = userId;
         TokenHash = tokenHash;
         ExpiresAt = expiresAt;
+        ApplicationId = applicationId;
         CreatedAt = DateTime.UtcNow;
     }
 

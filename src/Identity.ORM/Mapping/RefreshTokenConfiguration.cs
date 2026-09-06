@@ -21,6 +21,9 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 
         builder.HasIndex(rt => rt.TokenHash);
 
+        // Optional: null for logins that carried no client id.
+        builder.Property(rt => rt.ApplicationId);
+
         builder.Property(rt => rt.ExpiresAt).IsRequired();
         builder.Property(rt => rt.RevokedAt);
         builder.Property(rt => rt.CreatedAt).IsRequired();
@@ -32,6 +35,14 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
         builder.HasOne<User>()
             .WithMany()
             .HasForeignKey(rt => rt.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // FK to the application the token is scoped to. Cascade rather than set-null:
+        // clearing the column would silently turn an application-scoped token into a
+        // global one, letting refresh mint tokens for an application that no longer exists.
+        builder.HasOne<Application>()
+            .WithMany()
+            .HasForeignKey(rt => rt.ApplicationId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

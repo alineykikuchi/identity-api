@@ -10,4 +10,11 @@ public class LoginRequest
 
     /// <summary>Plaintext password.</summary>
     public string Password { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional client id of the application signing in (for example <c>developer-store</c>).
+    /// With it the access token carries that application's audience and the user's roles in
+    /// it; without it the token is issued with neither, as before roles existed.
+    /// </summary>
+    public string? ClientId { get; set; }
 }

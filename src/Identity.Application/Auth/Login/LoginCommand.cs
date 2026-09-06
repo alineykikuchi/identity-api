@@ -12,4 +12,10 @@ public class LoginCommand : IRequest<LoginResult>
 
     /// <summary>Plaintext password.</summary>
     public string Password { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional client id of the application the token is meant for. When omitted the
+    /// token is issued without an audience and without role claims.
+    /// </summary>
+    public string? ClientId { get; set; }
 }

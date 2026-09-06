@@ -21,6 +21,15 @@ public class DefaultContext : DbContext
     /// <summary>Issued refresh tokens (stored as hashes).</summary>
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
+    /// <summary>Consuming applications registered with the Identity provider.</summary>
+    public DbSet<Application> Applications => Set<Application>();
+
+    /// <summary>Roles, each scoped to one application.</summary>
+    public DbSet<Role> Roles => Set<Role>();
+
+    /// <summary>Assignments of users to application roles.</summary>
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

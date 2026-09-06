@@ -19,5 +19,7 @@ public class InfrastructureModuleInitializer : IModuleInitializer
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        builder.Services.AddScoped<IApplicationRepository, ApplicationRepository>();
+        builder.Services.AddScoped<IRoleRepository, RoleRepository>();
     }
 }

@@ -22,10 +22,53 @@ namespace Identity.ORM.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Identity.Domain.Entities.Application", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId")
+                        .IsUnique();
+
+                    b.ToTable("Applications", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("0b6d3f2c-1a44-4f3e-9c1d-6a5f8e2b7c10"),
+                            ClientId = "developer-store",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "Developer Store"
+                        });
+                });
+
             modelBuilder.Entity("Identity.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ApplicationId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
@@ -47,11 +90,55 @@ namespace Identity.ORM.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ApplicationId");
+
                     b.HasIndex("TokenHash");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("RefreshTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Identity.Domain.Entities.Role", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("1c7e4a3d-2b55-4a4f-8d2e-7b6a9f3c8d21"),
+                            ApplicationId = new Guid("0b6d3f2c-1a44-4f3e-9c1d-6a5f8e2b7c10"),
+                            Description = "Full access to the sample application",
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = new Guid("2d8f5b4e-3c66-4b5a-9e3f-8c7b0a4d9e32"),
+                            ApplicationId = new Guid("0b6d3f2c-1a44-4f3e-9c1d-6a5f8e2b7c10"),
+                            Description = "Regular customer of the sample application",
+                            Name = "Customer"
+                        });
                 });
 
             modelBuilder.Entity("Identity.Domain.Entities.User", b =>
@@ -93,8 +180,52 @@ namespace Identity.ORM.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("Identity.Domain.Entities.UserRole", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("UserRoles", (string)null);
+                });
+
             modelBuilder.Entity("Identity.Domain.Entities.RefreshToken", b =>
                 {
+                    b.HasOne("Identity.Domain.Entities.Application", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Identity.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Identity.Domain.Entities.Role", b =>
+                {
+                    b.HasOne("Identity.Domain.Entities.Application", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Identity.Domain.Entities.UserRole", b =>
+                {
+                    b.HasOne("Identity.Domain.Entities.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Identity.Domain.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
