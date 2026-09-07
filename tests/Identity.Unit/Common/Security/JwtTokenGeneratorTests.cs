@@ -71,6 +71,20 @@ public class JwtTokenGeneratorTests
         jwt.Claims.Should().Contain(c => c.Value == SampleUser.Email);
     }
 
+    [Fact(DisplayName = "The user's id is emitted as the standard sub claim, never as nameid")]
+    public void Given_AnyUser_When_Generating_Then_IdIsInTheSubClaim()
+    {
+        // Guards the wire format itself: consumers that decode the payload by hand
+        // (front-ends, non-.NET services) look for "sub". Asserting only on the value
+        // would let the claim silently go back to being named "nameid".
+        var jwt = Read(_generator.GenerateToken(SampleUser, "sample-app"));
+
+        jwt.Claims.Should().ContainSingle(c => c.Type == JwtRegisteredClaimNames.Sub)
+            .Which.Value.Should().Be(SampleUser.Id.ToString());
+
+        jwt.Claims.Should().NotContain(c => c.Type == "nameid");
+    }
+
     [Fact(DisplayName = "A missing signing key is rejected rather than producing an unsigned token")]
     public void Given_NoSecretKey_When_Generating_Then_Throws()
     {

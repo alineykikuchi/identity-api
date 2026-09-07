@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Security.Claims;
 
 namespace Identity.WebApi.Common;
@@ -10,8 +11,7 @@ namespace Identity.WebApi.Common;
 public abstract class BaseController : ControllerBase
 {
     /// <summary>
-    /// Reads the authenticated user's identifier from the <see cref="ClaimTypes.NameIdentifier"/>
-    /// claim of the access token.
+    /// Reads the authenticated user's identifier from the <c>sub</c> claim of the access token.
     /// </summary>
     /// <returns>The identifier of the authenticated user.</returns>
     /// <exception cref="UnauthorizedAccessException">
@@ -20,7 +20,12 @@ public abstract class BaseController : ControllerBase
     /// </exception>
     protected Guid GetCurrentUserId()
     {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        // Both names are read on purpose. With the JwtBearer default MapInboundClaims the
+        // token's "sub" arrives renamed to ClaimTypes.NameIdentifier; with the mapping
+        // turned off it arrives as "sub". Reading only one of them makes this method
+        // silently depend on that setting.
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
 
         if (!Guid.TryParse(claim, out var userId))
         {

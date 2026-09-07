@@ -38,9 +38,15 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(secretKey);
 
+        // The id goes out as the registered "sub" claim (RFC 7519), not as
+        // ClaimTypes.NameIdentifier: the outbound map would rename that one to "nameid",
+        // a WS-Federation short name only .NET consumers know how to read. Tokens issued
+        // here are decoded by front-ends and non-.NET services too, so the standard name
+        // is the one that belongs on the wire. .NET consumers keep working unchanged --
+        // the inbound map turns "sub" back into ClaimTypes.NameIdentifier.
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.Id),
+            new(JwtRegisteredClaimNames.Sub, user.Id),
             new(ClaimTypes.Name, user.Username)
         };
 
