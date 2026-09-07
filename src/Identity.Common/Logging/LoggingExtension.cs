@@ -49,7 +49,15 @@ public static class LoggingExtension
     /// <remarks>Log output differs between Debug and Release modes.</remarks>
     public static WebApplicationBuilder AddDefaultLogging(this WebApplicationBuilder builder)
     {
-        Log.Logger = new LoggerConfiguration().CreateLogger();
+        // Bootstrap logger, with a console sink on purpose. Everything logged through the
+        // static Log before the host finishes building lands here -- including a fatal
+        // startup failure such as the port already being taken. A sink-less logger here
+        // swallows those and the process just dies without printing anything.
+        // UseSerilog below replaces it with the fully configured logger.
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console(
+                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .CreateBootstrapLogger();
         builder.Host.UseSerilog((hostingContext, loggerConfiguration) =>
         {
             loggerConfiguration

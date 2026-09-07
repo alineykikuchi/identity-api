@@ -14,14 +14,20 @@ namespace Identity.WebApi;
 
 public class Program
 {
+    // Stays void, and the failure exit code goes through Environment.ExitCode: the
+    // functional tests reach this entry point through WebApplicationFactory, whose host
+    // resolution only recognizes the void signature. An int return makes every test in
+    // that project fail with "The entry point exited without ever building an IHost".
     public static void Main(string[] args)
     {
         try
         {
-            Log.Information("Starting web application");
-
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             builder.AddDefaultLogging();
+
+            // Logged after AddDefaultLogging, not before: until the bootstrap logger is
+            // installed the static Log has nowhere to write.
+            Log.Information("Starting web application");
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -73,9 +79,20 @@ public class Program
 
             app.Run();
         }
-        catch (Exception ex)
+        // HostAbortedException is let through on purpose. The EF Core design-time tools
+        // (dotnet ef migrations/database) and WebApplicationFactory both build the host and
+        // abort it by design to get at the service provider; treating that as a crash would
+        // bury every migration command in a stack trace.
+        catch (Exception ex) when (ex is not HostAbortedException)
         {
+            // Written to stderr as well as Serilog: this catch has to stay useful even when
+            // the failure happened before logging was configured -- a startup that dies here
+            // silently is what makes a busy port look like the app doing nothing at all.
+            Console.Error.WriteLine($"Application terminated unexpectedly: {ex}");
             Log.Fatal(ex, "Application terminated unexpectedly");
+
+            // Set rather than returned: Main has to keep its void signature (see above).
+            Environment.ExitCode = 1;
         }
         finally
         {
