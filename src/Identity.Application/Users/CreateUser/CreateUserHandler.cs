@@ -1,5 +1,6 @@
 using Identity.Common.Security;
 using Identity.Domain.Entities;
+using Identity.Domain.Exceptions;
 using Identity.Domain.Repositories;
 using MediatR;
 
@@ -28,7 +29,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, CreateUserRe
         if (existingUser is not null)
         {
             // Generic message: never reveal details of the existing account. Mapped to 409.
-            throw new InvalidOperationException("A user with the provided email already exists.");
+            throw new ConflictException("A user with the provided email already exists.");
         }
 
         var passwordHash = _passwordHasher.HashPassword(command.Password);

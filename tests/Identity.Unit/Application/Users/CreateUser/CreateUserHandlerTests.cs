@@ -2,6 +2,7 @@ using FluentAssertions;
 using Identity.Application.Users.CreateUser;
 using Identity.Common.Security;
 using Identity.Domain.Entities;
+using Identity.Domain.Exceptions;
 using Identity.Domain.Repositories;
 using NSubstitute;
 
@@ -53,7 +54,7 @@ public class CreateUserHandlerTests
 
         var act = () => _handler.Handle(command, CancellationToken.None);
 
-        await act.Should().ThrowAsync<InvalidOperationException>();
+        await act.Should().ThrowAsync<ConflictException>();
         await _userRepository.DidNotReceive().CreateAsync(Arg.Any<User>(), Arg.Any<CancellationToken>());
     }
 }
