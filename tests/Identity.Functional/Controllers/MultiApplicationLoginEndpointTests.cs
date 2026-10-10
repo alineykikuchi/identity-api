@@ -168,6 +168,36 @@ public class MultiApplicationLoginEndpointTests : IClassFixture<IdentityApiFacto
         Assert.Equal(new[] { "Admin", "Customer" }, roles);
     }
 
+    [Fact(DisplayName = "The migrations seed the party-invitation application, active and with no roles")]
+    public async Task Given_MigratedDatabase_When_Querying_Then_PartyPlatformApplicationIsSeeded()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+
+        var application = await context.Applications
+            .SingleAsync(a => a.ClientId == DevelopmentSeed.PartyPlatformClientId);
+
+        Assert.True(application.IsActive);
+
+        // That application has no role-based authorization yet, so seeding roles for it
+        // would only add rows nothing reads.
+        var roles = await context.Roles.Where(r => r.ApplicationId == application.Id).ToListAsync();
+        Assert.Empty(roles);
+    }
+
+    [Fact(DisplayName = "A user with no roles signs in to the party-invitation application and gets its audience")]
+    public async Task Given_PartyPlatformClientId_When_LoggingIn_Then_TokenCarriesItsAudience()
+    {
+        const string email = "organizer@example.com";
+        const string password = "password123";
+        await RegisterAsync(email, password);
+
+        var jwt = Read(await LoginAsync(email, password, DevelopmentSeed.PartyPlatformClientId));
+
+        Assert.Equal([DevelopmentSeed.PartyPlatformClientId], jwt.Audiences.ToArray());
+        Assert.Empty(RolesOf(jwt));
+    }
+
     private static JwtSecurityToken Read(string token) => new JwtSecurityTokenHandler().ReadJwtToken(token);
 
     private static string[] RolesOf(JwtSecurityToken jwt) =>

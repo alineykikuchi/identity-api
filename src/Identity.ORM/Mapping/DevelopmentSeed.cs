@@ -34,4 +34,22 @@ public static class DevelopmentSeed
 
     /// <summary>Creation timestamp used by every seeded row (UTC).</summary>
     public static readonly DateTime CreatedAt = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+    /// <summary>Client id of the seeded party-invitation application.</summary>
+    /// <remarks>
+    /// Registered so that application can sign in with a client id at all: a login whose
+    /// client id matches no active application is refused with the generic invalid-credentials
+    /// error, which is indistinguishable from a wrong password.
+    ///
+    /// No roles are seeded for it. That application has no role-based authorization — every
+    /// authenticated user acts on their own records — and a user with no roles signs in
+    /// normally, receiving a token with an audience and no role claim.
+    /// </remarks>
+    public const string PartyPlatformClientId = "festa-facil";
+
+    /// <summary>Display name of the seeded party-invitation application.</summary>
+    public const string PartyPlatformName = "Festa Fácil";
+
+    /// <summary>Identifier of the seeded party-invitation application.</summary>
+    public static readonly Guid PartyPlatformApplicationId = new("3e9a6c5f-4d77-4c6b-af40-9d8c1b5e0f43");
 }

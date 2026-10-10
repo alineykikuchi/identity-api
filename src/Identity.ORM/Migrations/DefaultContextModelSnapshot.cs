@@ -59,6 +59,14 @@ namespace Identity.ORM.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsActive = true,
                             Name = "Developer Store"
+                        },
+                        new
+                        {
+                            Id = new Guid("3e9a6c5f-4d77-4c6b-af40-9d8c1b5e0f43"),
+                            ClientId = "festa-facil",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            Name = "Festa Fácil"
                         });
                 });
 

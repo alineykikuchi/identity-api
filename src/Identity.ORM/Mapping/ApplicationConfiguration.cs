@@ -27,15 +27,24 @@ public class ApplicationConfiguration : IEntityTypeConfiguration<Application>
         builder.Property(a => a.IsActive).IsRequired();
         builder.Property(a => a.CreatedAt).IsRequired();
 
-        // Development seed: a sample consuming application. Anonymous objects are used
-        // because the entity's setters are private.
-        builder.HasData(new
-        {
-            Id = DevelopmentSeed.ApplicationId,
-            ClientId = DevelopmentSeed.ApplicationClientId,
-            Name = DevelopmentSeed.ApplicationName,
-            IsActive = true,
-            CreatedAt = DevelopmentSeed.CreatedAt
-        });
+        // Development seed: the consuming applications registered out of the box. Anonymous
+        // objects are used because the entity's setters are private.
+        builder.HasData(
+            new
+            {
+                Id = DevelopmentSeed.ApplicationId,
+                ClientId = DevelopmentSeed.ApplicationClientId,
+                Name = DevelopmentSeed.ApplicationName,
+                IsActive = true,
+                CreatedAt = DevelopmentSeed.CreatedAt
+            },
+            new
+            {
+                Id = DevelopmentSeed.PartyPlatformApplicationId,
+                ClientId = DevelopmentSeed.PartyPlatformClientId,
+                Name = DevelopmentSeed.PartyPlatformName,
+                IsActive = true,
+                CreatedAt = DevelopmentSeed.CreatedAt
+            });
     }
 }
